@@ -352,7 +352,8 @@ def get_user_info():
     token = data["token"]
     if token not in tokens:
         return jsonify({"status": "error", "message": "Invalid token"})
-    user_id = tokens[token]
+    
+    user_id = data["user_id"]
 
     cursor.execute("""SELECT username, user_id, user_bio_text, follower_ids, following_ids,\
                    style_description, top_style_pics FROM "UserInfo" WHERE user_id = %s""", (user_id,))
