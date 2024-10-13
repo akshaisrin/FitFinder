@@ -357,6 +357,8 @@ def getnext():
     i = 0
     while len(chosen) < 50:
         newid = ids[i]
+        if user_id not in recents:
+            recents[user_id] = []
         if newid in recents[user_id]:
             i += 1
             continue
