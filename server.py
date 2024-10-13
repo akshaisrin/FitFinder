@@ -69,12 +69,11 @@ def login():
     return jsonify({"status": "success", "token": token})
 
 
-@app.route("/api/get_image", methods=["POST"])
-def get_image():
+@app.route("/api/get_image/<id_>", methods=["POST"])
+def get_image(id_):
 
     if not fe.validate({
-        "token": str,
-        "id": str
+        "token": str
     }, request.json):
         return fe.invalid_data()
     
@@ -82,7 +81,7 @@ def get_image():
     # if token not in tokens:
     #     return jsonify({"status": "error", "message": "Invalid token"})
     
-    id_ = request.json["id"]
+    # id_ = request.json["id"]
 
     for item in filenames:
         if id_ + "_1" in item:
