@@ -28,7 +28,7 @@ with open("captions.json") as f:
 
 with open("classifications.txt") as f:
     c = f.read()
-    lines = f.split("\n")
+    lines = c.split("\n")
     classifications = {}
     for l in lines:
         c, tags = l.split(":")
