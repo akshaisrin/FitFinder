@@ -81,7 +81,36 @@ def register():
     cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password) VALUES (%s, %s, %s, %s)""", (userid, useremail, username, pwdhash))
     return jsonify({"status": "success"})
 
+@app.route("/api/send_message", methods=["POST"])
+def send_message():
 
+    data = request.json
+
+    if not fe.validate({
+        "token": str,
+        "receiver_id":str,
+        "message_text":str,
+        "chat_id":int,
+        "timestamp":str
+    }, request.json):
+        return fe.invalid_data()
+
+    token = data["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"})
+    
+    sender_id = tokens[token]
+    receiver_id=request.json["receiver_id"]
+    message_text=request.json["message_text"]
+    chat_id=request.json["chat_id"]
+    timestamp=request.json["timestamp"]
+
+    message_id=str(uuid.uuid4())
+
+    cursor.execute("""INSERT INTO "MessageInfo" (message_id, sender_id, receiver_id, chat_id, message_text, timestamp) 
+                   VALUES (%s, %s, %s, %s, %s)""", (message_id, sender_id, receiver_id, chat_id, message_text, timestamp))
+    return jsonify({"status": "success"})  
+    
 
 
 
