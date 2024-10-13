@@ -287,5 +287,8 @@ def index():
     return "This is a webserver for FitFinder.<br><br>Made with 🧡 by <a href=\"https://github.com/trigtbh\">trig</a>"
 
 
+def main():
+    app.run(host=settings.HTTP_HOST, port=settings.HTTP_PORT, ssl_context=settings.SSL_CONTEXT)
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    main()
