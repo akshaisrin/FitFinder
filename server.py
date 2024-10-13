@@ -1,3 +1,4 @@
+import io
 from flask import Flask, request, jsonify
 import json
 import sys
@@ -7,6 +8,8 @@ import uuid
 import settings
 import psycopg2
 import flaskerrors as fe
+from PIL import Image
+import base64
 
 base = os.path.dirname(os.path.abspath(__file__))
 os.chdir(base)
@@ -31,6 +34,13 @@ tokens = {}
 
 @app.route("/api/login", methods=["POST"])
 def login():
+
+    if not fe.validate({
+        "username": str,
+        "password": str
+    }, request.json):
+        return fe.invalid_data()
+
     username = request.json["username"]
     pwdhash = request.json["password"]
 
@@ -50,6 +60,14 @@ def login():
 
 @app.route("/api/register", methods=["POST"])
 def register():
+
+    if not fe.validate({
+        "username": str,
+        "password": str,
+        "email": str
+    }, request.json):
+        return fe.invalid_data()
+
     username = request.json["username"]
     pwdhash = request.json["password"]
     useremail = request.json["email"]
@@ -132,6 +150,10 @@ def swipe_left():
     data = request.json
     # user_id = data["user_id"]
 
+    if not fe.validate({
+        "token": str
+    }, data):
+        return fe.invalid_data()
 
     token = data["token"]
     if token not in tokens:
@@ -207,11 +229,62 @@ def getuser():
     return jsonify(user_data[user_id])
 
 
+@app.route("/api/set-pfp", methods=["POST"])
+def setpfp():
+    data = request.json
+    if not all(key in data for key in ["token", "pfp"]):
+        return fe.invalid_data()
+
+    token = data["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"})
+    user_id = tokens[token]
+
+    pfp = data["pfp"]
+    # convert from base64 to image
+    image_data = base64.b64decode(pfp)
+    image_path = f"{user_id}.png"
+
+    image = Image.open(io.BytesIO(image_data))
+    image = image.resize((256, 256))
+    image = image.convert("RGB")
+
+    fullpath = os.path.join(base, "pfps", image_path)
+    image.save(fullpath)
+
+    return jsonify({"status": "success", "message": "Profile picture uploaded successfully"})
+
+
+@app.route("/api/get-pfp", methods=["POST"])
+def getpfp():
+    data = request.json
+    if not all(key in data for key in ["token"]):
+        return fe.invalid_data()
+
+    token = data["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"})
+    user_id = tokens[token]
+
+    if os.path.exists(os.path.join(base, "pfps", f"{user_id}.png")):
+        fullpath = os.path.join(base, "pfps", f"{user_id}.png")
+    else:
+        fullpath = os.path.join(base, "pfps", "default.png")
+
+
+    try:
+        with open(fullpath, "rb") as f:
+            return jsonify({"status": "success", "pfp": base64.b64encode(f.read()).decode()})
+    except FileNotFoundError:
+        return jsonify({"status": "error", "message": "Profile picture not found"}), 500
+        
+
+
 
 
 @app.route("/")
 def index():
-    return "This is a webserver for FitFinder."
+    return "This is a webserver for FitFinder.<br><br>Made with 🧡 by <a href=\"https://github.com/trigtbh\">trig</a>"
 
 
 if __name__ == "__main__":
