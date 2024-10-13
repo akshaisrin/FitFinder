@@ -8,8 +8,7 @@ const Color deepPurple = Color(0xFF6A0DAD);
 
 class ExplorePage extends StatefulWidget {
   @override
-
-  String token;
+  final String token;
 
   ExplorePage({required this.token});
   _ExplorePageState createState() => _ExplorePageState();
@@ -19,25 +18,22 @@ class _ExplorePageState extends State<ExplorePage> {
   late MatchEngine _matchEngine;
   List<SwipeItem> _swipeItems = [];
   List<String> bookmarkedImages = []; // List to store bookmarked images
-  Random _random = Random(); // For generating random strings or values
+  bool _isLoading = true; // Track loading state
+  final Random _random = Random(); // For generating random strings or values
   final String likeUrl = "https://trigtbh.dev:5000/api/swipe-right"; // Replace with your like URL
   final String dislikeUrl = "https://trigtbh.dev:5000/api/swipe-left"; // Replace with your dislike URL
 
-  String token = "";
   @override
   void initState() {
     super.initState();
-    _initializeSwipeItems(); // Initialize swipe items
-    _matchEngine = MatchEngine(swipeItems: _swipeItems);
-    token = widget.token;
+    _fetchSwipeItems(); // Fetch and create swipe items when the widget initializes
   }
 
-  // Initialize swipe items for the SwipeCards widget
-  void _initializeSwipeItems() {
-    _swipeItems.clear();
-    for (int i = 0; i < 100; i++) {
-      try {
-        http.post(
+  Future<void> _fetchSwipeItems() async {
+    List<SwipeItem> tempSwipeItems = [];
+    try {
+      for (int i = 0; i < 50; i++) {
+        final response = await http.post(
           Uri.parse("https://trigtbh.dev:5000/api/next"),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
@@ -45,35 +41,39 @@ class _ExplorePageState extends State<ExplorePage> {
           body: jsonEncode(<String, String>{
             "token": widget.token,
           }),
-        ).then((resp) {
-          String id = jsonDecode(resp.body)["clothes_id"];
+        );
 
+        if (response.statusCode == 200) {
+          String id = jsonDecode(response.body)["clothes_id"];
           String url = "https://trigtbh.dev:5000/api/get_image/" + id;
 
-
-          _swipeItems.add(SwipeItem(
+          // Create a SwipeItem for each fetched image URL
+          tempSwipeItems.add(SwipeItem(
             content: url,
             likeAction: () async {
               await _sendLikeRequest(url);
-              // print("Liked: https://example.com/random_image_${_random.nextInt(1000)}.jpg");
             },
             nopeAction: () async {
-              // print("Disliked: https://example.com/random_image_${_random.nextInt(1000)}.jpg");
               await _sendDislikeRequest(url);
             },
             superlikeAction: () async {
-              // _bookmarkImage('https://example.com/random_image_${_random.nextInt(1000)}.jpg');
-              // print("Bookmarked");
+              _bookmarkImage(url);
             },
           ));
-        });
-      } catch (e) {
-
+        } else {
+          throw Exception("Failed to fetch image data");
+        }
       }
-
-
-
+    } catch (e) {
+      print("Error fetching swipe items: $e");
     }
+
+    // Once the items are loaded, update the state
+    setState(() {
+      _swipeItems = tempSwipeItems;
+      _matchEngine = MatchEngine(swipeItems: _swipeItems);
+      _isLoading = false; // Data has finished loading
+    });
   }
 
   Future<void> _sendLikeRequest(String imageUrl) async {
@@ -84,7 +84,7 @@ class _ExplorePageState extends State<ExplorePage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          "clothes_id": imageUrl.split("/")[imageUrl.split("/").length - 1], // Send the image URL or any other necessary data
+          "clothes_id": imageUrl.split("/").last, // Get the image ID
           "token": widget.token,
         }),
       );
@@ -107,7 +107,7 @@ class _ExplorePageState extends State<ExplorePage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          "clothes_id": imageUrl.split("/")[imageUrl.split("/").length - 1], // Send the image URL or any other necessary data
+          "clothes_id": imageUrl.split("/").last, // Get the image ID
           "token": widget.token,
         }),
       );
@@ -121,7 +121,6 @@ class _ExplorePageState extends State<ExplorePage> {
       print("Error sending dislike request: $e");
     }
   }
-
 
   // Function to bookmark the image and show a popup message
   void _bookmarkImage(String imageUrl) {
@@ -137,7 +136,6 @@ class _ExplorePageState extends State<ExplorePage> {
         );
         print('Bookmarked: $imageUrl');
       } else {
-        // Optionally handle duplicate bookmarks if needed
         print('Image already bookmarked: $imageUrl');
       }
     });
@@ -146,14 +144,15 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildSwipeView(),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator()) // Show a loading indicator while fetching data
+          : _buildSwipeView(),
     );
   }
 
   Widget _buildSwipeView() {
     return Column(
       children: [
-        // Using SizedBox to control the height of the swipe area
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.7, // Set fixed height to 70% of the screen
           child: SwipeCards(
@@ -173,10 +172,13 @@ class _ExplorePageState extends State<ExplorePage> {
                         imageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        height: MediaQuery.of(context).size.height * 0.4, // Reduced height to 40% of the screen
+                        height: MediaQuery.of(context).size.height * 0.4, // Set height to 40% of the screen
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey[200],
+                            child: Center(
+                              child: Icon(Icons.error, color: Colors.red),
+                            ),
                           );
                         },
                       ),
@@ -184,7 +186,7 @@ class _ExplorePageState extends State<ExplorePage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        "Random Fashion Image",
+                        "Fashion Item",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -197,7 +199,6 @@ class _ExplorePageState extends State<ExplorePage> {
               );
             },
             onStackFinished: () {
-              // No special handling required since we're generating images dynamically
               print('Stack finished');
             },
             upSwipeAllowed: true, // Allow upward swiping for bookmarking

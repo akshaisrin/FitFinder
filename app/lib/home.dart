@@ -21,9 +21,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  String _token = "";
+  late String _token = "";
 
-  List<Widget> _tabs = [];
+  late List<Widget> _tabs = [];
 
   @override
   void initState() {
