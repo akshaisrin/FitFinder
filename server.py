@@ -274,7 +274,7 @@ def swipe_right():
 
     clothes_data = realclothesdata[clothes_id]
     for key, value in mapped_labels.items():
-        cursor.execute(f"""select {value} from "UserPreferenceMapping" where user_id = %s""", (user_id))
+        cursor.execute(f"""select {value} from "UserPreferenceMapping" where user_id = %s""", (user_id,))
         x = cursor.fetchone()
         print(x)
         data = x[0]
@@ -282,7 +282,7 @@ def swipe_right():
         data[
             clothes_data[key]
         ] = int(data[clothes_data[key]]) + 1
-        cursor.execute(f"""update "UserPreferenceMapping" set {value} = ARRAY{data} where user_id = %s""", (user_id))
+        cursor.execute(f"""update "UserPreferenceMapping" set {value} = ARRAY{data} where user_id = %s""", (user_id,))
 
     if user_id not in recents:
         recents[user_id] = []
@@ -312,13 +312,13 @@ def swipe_left():
     clothes_id = data["clothes_id"]
     clothes_data = realclothesdata[clothes_id]
     for key, value in mapped_labels.items():
-        cursor.execute(f"""select {value} from "UserPreferenceMapping" where user_id = %s""", (user_id))
+        cursor.execute(f"""select {value} from "UserPreferenceMapping" where user_id = %s""", (user_id,))
         data = cursor.fetchone()[0]
         print(data)
         data[
             clothes_data[key]
         ] = int(data[clothes_data[key]]) - 1
-        cursor.execute(f"""update "UserPreferenceMapping" set {value} = ARRAY{data} where user_id = %s""", (user_id))
+        cursor.execute(f"""update "UserPreferenceMapping" set {value} = ARRAY{data} where user_id = %s""", (user_id,))
 
 
 
