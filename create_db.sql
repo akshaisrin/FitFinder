@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS "UserInfo"(
     PRIMARY KEY("user_id")
 );
 
-CREATE TABLE IF NOT EXISTS "ShapeUserMapping"(
+CREATE TABLE IF NOT EXISTS "UserPreferenceMapping"(
     "user_id" VARCHAR(255) NOT NULL, 
     "sleeve_length" INT[] NOT NULL,
     CONSTRAINT "sleeve_length_size" CHECK (array_length(sleeve_length, 1) = 6), 
@@ -39,25 +39,13 @@ CREATE TABLE IF NOT EXISTS "ShapeUserMapping"(
     "outer_clothing" INT[] NOT NULL, 
     CONSTRAINT "outer_clothing_size" CHECK (array_length(outer_clothing, 1) = 3), 
     "upper_clothing" INT[] NOT NULL, 
-    CONSTRAINT "upper_clothing_size" CHECK (array_length(upper_clothing, 1) = 3), 
-    PRIMARY KEY("user_id"),
-	FOREIGN KEY("user_id") REFERENCES "UserInfo"("user_id")
-);
-
-CREATE TABLE IF NOT EXISTS "FabricUserMapping"(
-    "user_id" VARCHAR(255) NOT NULL, 
+    CONSTRAINT "upper_clothing_size" CHECK (array_length(upper_clothing, 1) = 3),
     "upper_fabric" INT[] NOT NULL, 
     CONSTRAINT "upper_fabric_size" CHECK (array_length(upper_fabric, 1) = 8),
     "lower_fabric" INT[] NOT NULL, 
     CONSTRAINT "lower_fabric_size" CHECK (array_length(lower_fabric, 1) = 8),
     "outer_fabric" INT[] NOT NULL, 
-    CONSTRAINT "outer_fabric_size" CHECK (array_length(outer_fabric, 1) = 8), 
-    PRIMARY KEY("user_id"),
-	FOREIGN KEY("user_id") REFERENCES "UserInfo"("user_id")
-);
-
-CREATE TABLE IF NOT EXISTS "ColorUserMapping"(
-    "user_id" VARCHAR(255) NOT NULL, 
+    CONSTRAINT "outer_fabric_size" CHECK (array_length(outer_fabric, 1) = 8),
     "upper_color" INT[] NOT NULL, 
     CONSTRAINT "upper_color_size" CHECK (array_length(upper_color, 1) = 8),
     "lower_color" INT[] NOT NULL, 
@@ -71,19 +59,16 @@ CREATE TABLE IF NOT EXISTS "ColorUserMapping"(
 CREATE TABLE IF NOT EXISTS "ChatInfo"(
 	"chat_id" VARCHAR(255) NOT NULL,
 	"chat_members" VARCHAR(255)[] NOT NULL,
-	"chat_name" VARCHAR(255),
 	PRIMARY KEY("chat_id")
 );
 
 CREATE TABLE IF NOT EXISTS "MessageInfo"(
 	"message_id" VARCHAR(255) NOT NULL,
 	"sender_id" VARCHAR(255) NOT NULL,
-	"receiver_id" VARCHAR(255) NOT NULL,
 	"chat_id" VARCHAR(255) NOT NULL,
 	"message_text" VARCHAR(255),
     "timestamp" VARCHAR(255),
 	PRIMARY KEY("message_id"),
 	FOREIGN KEY("sender_id") REFERENCES "UserInfo"("user_id"),
-	FOREIGN KEY("receiver_id") REFERENCES "UserInfo"("user_id"),
 	FOREIGN KEY("chat_id") REFERENCES "ChatInfo"("chat_id")
 );
