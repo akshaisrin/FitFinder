@@ -78,7 +78,7 @@ def login():
     return jsonify({"status": "success", "token": token})
 
 
-@app.route("/api/get_image/<id_>", methods=["POST"])
+@app.route("/api/get_image/<id_>", methods=["GET"])
 def get_image(id_):
 
     # if not fe.validate({
