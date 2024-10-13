@@ -399,6 +399,35 @@ def get_user_chats():
     return jsonify({"user_ids":other_userids, "chat_ids":chat_ids})
 
 
+@app.route("/api/get_recent_messages", methods=["POST"])
+def get_recent_messages():
+    
+    if not fe.validate({
+        "chat_id":str
+    }, request.json):
+        return fe.invalid_data()
+
+    chat_id=request.json["chat_id"]
+
+    cursor.execute("""SELECT sender_id, message_text, timestamp FROM "MessageInfo" WHERE chat_id= %s \
+                   ORDER BY message_id DESC LIMIT 20""", (chat_id,))
+    rows = cursor.fetchall()[::-1]
+    if rows is None:
+        return fe.invalid_credentials()
+
+    messages_list = []
+    for message in rows:
+        message_dict = {
+            'sender_id': message[0],
+            'message_text': message[1],
+            'timestamp': message[2]
+        }
+        messages_list.append(message_dict)
+
+    return jsonify({"message_info":messages_list})
+
+
+
 @app.route("/api/user", methods=["POST"])
 def getuser():
     data = request.json
