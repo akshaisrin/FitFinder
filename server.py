@@ -173,8 +173,8 @@ def send_message():
         "token": str,
         # "receiver_id":str,
         "message_text":str,
-        "chat_id":int,
-        "timestamp":str
+        "chat_id":str,
+        "timestamp":float
     }, request.json):
         return fe.invalid_data()
 
