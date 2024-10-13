@@ -113,6 +113,36 @@ def send_message():
                    VALUES (%s, %s, %s, %s, %s)""", (message_id, sender_id, receiver_id, chat_id, message_text, timestamp))
     return jsonify({"status": "success"})  
     
+@app.route("/api/create_chat", methods=["POST"])
+def create_chat():
+
+    data = request.json
+
+    if not fe.validate({
+        "token": str,
+        "receiver_id":str,
+        "message_text":str,
+        "chat_id":int,
+        "timestamp":str
+    }, request.json):
+        return fe.invalid_data()
+
+    token = data["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"})
+    
+    sender_id = tokens[token]
+    receiver_id=request.json["receiver_id"]
+    message_text=request.json["message_text"]
+    chat_id=request.json["chat_id"]
+    timestamp=request.json["timestamp"]
+
+    message_id=str(uuid.uuid4())
+
+    cursor.execute("""INSERT INTO "MessageInfo" (message_id, sender_id, receiver_id, chat_id, message_text, timestamp) 
+                   VALUES (%s, %s, %s, %s, %s)""", (message_id, sender_id, receiver_id, chat_id, message_text, timestamp))
+    return jsonify({"status": "success"})  
+    
 
 
 
@@ -244,6 +274,27 @@ def getnext():
     chosenid = random.choice(chosen)
     return jsonify({"clothes_id": chosenid})
 
+@app.route("/api/get_user_info", methods=["POST"])
+def get_user_info():
+    data = request.json
+    # user_id = data["user_id"]
+
+    token = data["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"})
+    user_id = tokens[token]
+
+    cursor.execute("""SELECT * FROM "UserInfo" WHERE user_id = %s""", (user_id,))
+    data = cursor.fetchone()
+    if data is None:
+        return fe.invalid_credentials()
+
+    data_dict={"user_name":data["user_name"], "user_email":data["user_email"], "user_password": data["user_password"], \
+               "user_bio_text":data["user_bio_text"], "follower_ids": data["follower_ids"], \
+                "following_ids":data["following_ids"], "style_description":data["style_description"], \
+                "top_style_pics":data["top_style_pics"]}
+
+    return jsonify(data_dict)
 
 @app.route("/api/user", methods=["POST"])
 def getuser():
