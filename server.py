@@ -79,7 +79,9 @@ def register():
 
     userid = str(uuid.uuid4())
     cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password) VALUES (%s, %s, %s, %s)""", (userid, useremail, username, pwdhash))
-    return jsonify({"status": "success"})
+    token = str(uuid.uuid4())
+    tokens[token] = userid
+    return jsonify({"status": "success", "token": token})
 
 @app.route("/api/send_message", methods=["POST"])
 def send_message():
