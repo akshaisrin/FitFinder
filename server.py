@@ -81,10 +81,10 @@ def login():
 @app.route("/api/get_image/<id_>", methods=["POST"])
 def get_image(id_):
 
-    if not fe.validate({
-        "token": str
-    }, request.json):
-        return fe.invalid_data()
+    # if not fe.validate({
+    #     "token": str
+    # }, request.json):
+    #     return fe.invalid_data()
     
     # token = request.json["token"]
     # if token not in tokens:
@@ -321,12 +321,15 @@ def swipe_left():
 
 
 def match(user_id, clothes_id):
-    userdata = user_data[user_id]
+    # userdata = user_data[user_id]
+    cursor.execute("""SELECT * FROM "UserPreferenceMapping" WHERE user_id = %s""", (user_id,))
+    userdata = cursor.fetchone()[1:]
+
     clothes_data = realclothesdata[clothes_id]
 
     score = 0
-    for item in clothes_data:
-        score += userdata[item][clothes_data[item]]
+    for i, item in enumerate(clothes_data):
+        score += userdata[i][clothes_data[item]]
 
     return score
 
