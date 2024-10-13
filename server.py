@@ -4,6 +4,9 @@ import sys
 import random
 import os
 import uuid
+import settings
+import psycopg2
+import flaskerrors as fe
 
 base = os.path.dirname(os.path.abspath(__file__))
 os.chdir(base)
@@ -14,34 +17,51 @@ with open("tagged.json") as f:
     realclothesdata = json.load(f)
 
 
+connection = psycopg2.connect(
+    user=settings.USER,
+    password=settings.PASSWORD,
+    host=settings.HOST,
+    port=settings.PORT,
+    database=settings.DB,
+    sslmode="require"
+)
+connection.set_session(autocommit=True)
+cursor = connection.cursor()
 tokens = {}
 
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
     username = request.json["username"]
     pwdhash = request.json["password"]
 
-    # TODO: check if username and password match
+    cursor.execute("""SELECT user_id FROM "UserInfo" WHERE username = %s AND user_password = %s""", (username, pwdhash))
+    id_ = cursor.fetchone()
+    if id_ is None:
+        return fe.invalid_credentials()
 
-    user_id = ... # TODO: grab user id from database
+    user_id = id_[0]
+    if user_id in tokens.values():
+        return {"status": "success", "token": [token for token, id in tokens.items() if id == user_id][0]}
     token = str(uuid.uuid4())
     tokens[token] = user_id
-    return jsonify({"token": token})
+    return jsonify({"status": "success", "token": token})
 
 
 
-@app.route("/register", methods=["POST"])
+@app.route("/api/register", methods=["POST"])
 def register():
     username = request.json["username"]
     pwdhash = request.json["password"]
+    useremail = request.json["email"]
 
 
-    # TODO: check if username already exists
-
+    cursor.execute("""SELECT * FROM "UserInfo" WHERE username = %s""", (username,))
+    if cursor.fetchone() is not None:
+        return fe.already_exists()
 
     userid = str(uuid.uuid4())
-    # TODO: add to database
-
+    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password) VALUES (%s, %s, %s, %s)""", (userid, useremail, username, pwdhash))
+    return jsonify({"status": "success"})
 
 
 
@@ -79,6 +99,12 @@ user_data = {
 def swipe_right():
     data = request.json
     # user_id = data["user_id"]
+
+    if not fe.validate({
+        "token": str
+    }, data):
+        return fe.invalid_data()
+
 
     token = data["token"]
     if token not in tokens:
