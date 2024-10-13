@@ -321,13 +321,13 @@ def get_user_info():
         return jsonify({"status": "error", "message": "Invalid token"})
     user_id = tokens[token]
 
-    cursor.execute("""SELECT user_name, user_email, user_password, user_bio_text, followers_id, following_ids,\
+    cursor.execute("""SELECT username, user_email, user_password, user_bio_text, followers_id, following_ids,\
                    style_description, top_style_pics FROM "UserInfo" WHERE user_id = %s""", (user_id,))
     data = cursor.fetchone()
     if data is None:
         return fe.invalid_credentials()
 
-    data_dict={"user_name":data[0], "user_email":data[1], "user_password": data[2], \
+    data_dict={"username":data[0], "user_email":data[1], "user_password": data[2], \
                "user_bio_text":data[3], "follower_ids": data[4], \
                 "following_ids":data[5], "style_description":data[6], \
                 "top_style_pics":data[7]}
