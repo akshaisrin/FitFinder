@@ -26,6 +26,14 @@ os.chdir(base)
 with open("captions.json") as f:
     filenames = json.load(f).keys()
 
+with open("classifications.txt") as f:
+    c = f.read()
+    lines = f.split("\n")
+    classifications = {}
+    for l in lines:
+        c, tags = l.split(":")
+        classifications[c] = tags.split(",")
+
 app = Flask(__name__)
 
 with open("tagged.json") as f:
@@ -87,12 +95,38 @@ def get_image(id_):
         if id_ + "_1" in item:
             break
     
-    print(item)
     bucket = s3.Bucket("fitfinder")
     obj = bucket.Object(item)
     response = obj.get()
     base64_image = base64.b64encode(response["Body"].read()).decode()
     return jsonify({"status": "success", "image": base64_image})
+
+@app.route("/api/get_classes", methods=["POST"])
+def get_classes():
+    if not fe.validate({
+        "token": str,
+        "id": str
+    }, request.json):
+        return fe.invalid_data()
+    
+    token = request.json["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"}), 400
+    
+    id_ = request.json["id"]
+    if id_ not in realclothesdata:
+        return jsonify({"status": "error", "message": "Invalid ID"}), 400
+    
+    ids = realclothesdata[id_]
+    classes = {
+    }
+
+    keys = list(ids.keys())
+    keys.remove("gender")
+    for i in range(len(keys)):
+        classes[list(classes.keys())[i]] = classifications[list(classes.keys())[i]][ids[keys[i]]]
+
+    return jsonify({"status": "success", "classes": classes})
 
 
 @app.route("/api/register", methods=["POST"])
@@ -115,7 +149,7 @@ def register():
         return fe.already_exists()
 
     userid = str(uuid.uuid4())
-    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password) VALUES (%s, %s, %s, %s)""", (userid, useremail, username, pwdhash))
+    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description) VALUES (%s, %s, %s, %s, [], [], "")""", (userid, useremail, username, pwdhash))
     token = str(uuid.uuid4())
     tokens[token] = userid
     return jsonify({"status": "success", "token": token})

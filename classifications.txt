@@ -1,0 +1,18 @@
+sleeve length:sleeveless,short-sleeve,medium-sleeve,long-sleeve,not long-sleeve,NA
+lower clothing length:three-point,medium short,three-quarter,long,NA
+socks:no,socks,leggings,NA
+hat:no,yes,NA
+glasses:no,eyeglasses,sunglasses,have a glasses in hand or clothes,NA
+neckwear:no,yes,NA
+wrist wearing:no,yes,NA
+ring:no,yes,NA
+waist accessories:no,belt,have a clothing,hidden,NA
+neckline:V-shape,square,round,standing,lapel,suspenders,NA
+outer clothing a cardigan?:yes,no,NA
+upper clothing covering navel:no,yes,NA
+upper fabric:denim,cotton,leather,furry,knitted,chiffon,other,NA
+lower fabric:denim,cotton,leather,furry,knitted,chiffon,other,NA
+outer fabric:denim,cotton,leather,furry,knitted,chiffon,other,NA
+upper color:floral,graphic,striped,pure color,lattice,other,color block,NA
+lower color:floral,graphic,striped,pure color,lattice,other,color block,NA
+outer color:floral,graphic,striped,pure color,lattice,other,color block,NA
