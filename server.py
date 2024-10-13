@@ -377,25 +377,26 @@ def get_user_chats():
         return jsonify({"status": "error", "message": "Invalid token"})
     user_id = tokens[token]
 
-    cursor.execute("""SELECT chat_members FROM "ChatInfo" WHERE %s = ANY(chat_members)""", (user_id,))
+    cursor.execute("""SELECT chat_id, chat_members FROM "ChatInfo" WHERE %s = ANY(chat_members)""", (user_id,))
     rows = cursor.fetchall()
     if rows is None:
         return fe.invalid_credentials()
 
-    other_userids = set()
+    other_userids = []
+    chat_ids=[]
         
     for row in rows:
-        chat_members = row[0]
+        chat_id=row[0]
+        chat_members = row[1]
 
         # Filter out the provided userid from the chat_members list
         other_members = [member for member in chat_members if member != user_id]
 
         # Add other members to the set
-        other_userids.update(other_members)
-    
-    other_userids=list(other_userids)
+        other_userids.append(other_members[0])
+        chat_ids.append(chat_id)
 
-    return jsonify({"chats":other_userids})
+    return jsonify({"user_ids":other_userids, "chat_ids":chat_ids})
 
 
 @app.route("/api/user", methods=["POST"])
