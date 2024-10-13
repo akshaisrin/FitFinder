@@ -321,7 +321,8 @@ def get_user_info():
         return jsonify({"status": "error", "message": "Invalid token"})
     user_id = tokens[token]
 
-    cursor.execute("""SELECT * FROM "UserInfo" WHERE user_id = %s""", (user_id,))
+    cursor.execute("""SELECT user_name, user_email, user_password, user_bio_text, followers_id, following_ids,\
+                   style_description, top_style_pics FROM "UserInfo" WHERE user_id = %s""", (user_id,))
     data = cursor.fetchone()
     if data is None:
         return fe.invalid_credentials()
