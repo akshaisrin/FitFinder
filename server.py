@@ -122,7 +122,7 @@ def do_ai_styling():
         maximum = max(data[i])
         classes[list(classifications.keys())[i]] = classifications[list(classifications.keys())[i]][data[i].index(maximum)]
     
-    query="I want you to return a short, 3-4 word fashion style that encompasses these attributes: "
+    query="I want you to return a short, 3-4 word fashion style that encompasses these attributes. Limit your response to 4 words maximum. Attributes: "
     for key in classes:
         query+=key + ": " + classes[key] + ", "
 

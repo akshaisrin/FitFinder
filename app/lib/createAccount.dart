@@ -1,4 +1,5 @@
 import 'package:fit_finder/home.dart';
+import 'package:fit_finder/initialPhotos.dart';
 import 'package:flutter/material.dart';
 import 'package:fit_finder/createAccount.dart';
 import 'login.dart';
@@ -108,7 +109,7 @@ class _CreateAccountState extends State<CreateAccountPage> {
     // After account creation, navigate to the Profile page or any other page
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomePage(token: token)),
+      MaterialPageRoute(builder: (context) => InitialPhotosPage(token: token)),
     );
   }
 
