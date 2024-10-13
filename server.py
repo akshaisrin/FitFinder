@@ -12,6 +12,7 @@ from PIL import Image
 import base64
 import boto3
 import botosettings
+from bedrock import *
 
 s3 = boto3.resource(    
     "s3",
@@ -101,8 +102,8 @@ def get_image(id_):
     base64_image = base64.b64encode(response["Body"].read()).decode()
     return jsonify({"status": "success", "image": base64_image})
 
-@app.route("/api/get_classes", methods=["POST"])
-def get_classes():
+@app.route("/api/do_ai_styling", methods=["POST"])
+def do_ai_styling():
     if not fe.validate({
         "token": str
     }, request.json):
@@ -120,10 +121,15 @@ def get_classes():
     for i in range(len(data)):
         maximum = max(data[i])
         classes[list(classifications.keys())[i]] = classifications[list(classifications.keys())[i]][data[i].index(maximum)]
+    
+    query="I want you to return a short, 3-4 word fashion style that encompasses these attributes: "
+    for key in classes:
+        query+=key + ": " + classes[key] + ", "
 
+    query=query[0:-1] 
+    style=query_bedrock(query)
         
-    return jsonify({"status": "success", "classes": classes})
-
+    return jsonify({"status": "success", "style": style})
 
 @app.route("/api/register", methods=["POST"])
 def register():
