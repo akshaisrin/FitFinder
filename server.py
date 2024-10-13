@@ -10,9 +10,21 @@ import psycopg2
 import flaskerrors as fe
 from PIL import Image
 import base64
+import boto3
+import botosettings
+
+s3 = boto3.resource(    
+    "s3",
+    aws_access_key_id=botosettings.ACCESS_KEY,
+    aws_secret_access_key=botosettings.SECRET_KEY
+)
+
 
 base = os.path.dirname(os.path.abspath(__file__))
 os.chdir(base)
+
+with open("captions.json") as f:
+    filenames = json.load(f).keys()
 
 app = Flask(__name__)
 
@@ -56,6 +68,32 @@ def login():
     tokens[token] = user_id
     return jsonify({"status": "success", "token": token})
 
+
+@app.route("/api/get_image", methods=["POST"])
+def get_image():
+
+    if not fe.validate({
+        "token": str,
+        "id": str
+    }, request.json):
+        return fe.invalid_data()
+    
+    # token = request.json["token"]
+    # if token not in tokens:
+    #     return jsonify({"status": "error", "message": "Invalid token"})
+    
+    id_ = request.json["id"]
+
+    for item in filenames:
+        if id_ + "_1" in item:
+            break
+    
+    print(item)
+    bucket = s3.Bucket("fitfinder")
+    obj = bucket.Object(item)
+    response = obj.get()
+    base64_image = base64.b64encode(response["Body"].read()).decode()
+    return jsonify({"status": "success", "image": base64_image})
 
 
 @app.route("/api/register", methods=["POST"])
