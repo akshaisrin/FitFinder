@@ -124,9 +124,12 @@ def get_classes():
     actualids = list(ids.keys())
     actualids.remove("gender")
 
-    for i in range(len(ids)):
-        classes[list(classifications.keys())[i]] = classifications[list(classifications.keys())[i]][ids[actualids[i]]]
 
+    for i in range(len(actualids)):
+        id_name = list(classifications.keys())[i]
+        num = ids[actualids[i]]
+        classes[id_name] = classifications[id_name][num]
+        
     return jsonify({"status": "success", "classes": classes})
 
 
