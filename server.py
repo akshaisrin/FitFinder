@@ -151,8 +151,8 @@ def register():
     cursor.execute("""INSERT INTO "UserPreferenceMapping" (user_id, 
                    sleeve_length, lower_clothing_length, socks, hat, glasses, neckwear, wrist_wearing, ring, waist_accessories,
                    neckline, outer_clothing, upper_clothing, upper_fabric, lower_fabric, outer_fabric,
-                   upper_color, lower_color, outer_color) (
-                   %s, ARRAY[0, 0, 0, 0, 0, 0,], ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0], ARRAY[0, 0, 0],
+                   upper_color, lower_color, outer_color) VALUES (
+                   %s, ARRAY[0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0], ARRAY[0, 0, 0],
                    ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0], ARRAY[0, 0, 0], ARRAY[0, 0, 0], 
                    ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0], ARRAY[0, 0, 0], 
                    ARRAY[0, 0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0, 0], 
