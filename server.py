@@ -278,7 +278,7 @@ def swipe_right():
         data = cursor.fetchone()[0]
         data[
             clothes_data[key]
-        ] += 1
+        ] = int(data[clothes_data[key]]) + 1
         cursor.execute("""update "UserPreferenceMapping" set %s = %s where user_id = %s""", (value, data, user_id))
 
     if user_id not in recents:
@@ -313,7 +313,7 @@ def swipe_left():
         data = cursor.fetchone()[0]
         data[
             clothes_data[key]
-        ] -= 1
+        ] = int(data[clothes_data[key]]) - 1
         cursor.execute("""update "UserPreferenceMapping" set %s = %s where user_id = %s""", (value, data, user_id))
 
 
@@ -334,7 +334,7 @@ def match(userdata, clothes_id):
 
     score = 0
     for i, item in enumerate(list(clothes_data.keys())[1:]):
-        score += userdata[i][clothes_data[item]]
+        score += int(userdata[i][clothes_data[item]])
 
     return score
 
