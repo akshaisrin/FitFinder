@@ -226,33 +226,30 @@ def create_chat():
     return jsonify({"status": "success"})  
     
 
-
-
-user_data = {
-    "1": {
-        "gender": [0] * 2,
-        "length": [0] * 6,
-        "lclength": [0] * 5,
-        "socks": [0] * 4,
-        "hat": [0] * 3,
-        "glasses": [0] * 5,
-        "neck": [0] * 3,
-        "wrist": [0] * 3,
-        "ring": [0] * 3,
-        "waist": [0] * 5,
-        "neckline": [0] * 7,
-        "cardigan": [0] * 3,
-        "navel": [0] * 3,
-        "upper_fabric": [0] * 8,
-        "lower_fabric": [0] * 8,
-        "outer_fabric": [0] * 8,
-        "upper_color": [0] * 8,
-        "lower_color": [0] * 8,
-        "outer_color": [0] * 8,
-        "recent": []
-    }
+mapped_labels = {
+    "length": "sleeve_length",
+    "lclength": "lower_clothing_length",
+    "socks": "socks",
+    "hat": "hat",
+    "glasses": "glasses",
+    "neck": "neckwear",
+    "wrist": "wrist_wearing",
+    "ring": "ring",
+    "waist": "waist_accessories",
+    "neckline": "neckline",
+    "cardigan": "outer_clothing",
+    "navel": "upper_clothing",
+    "upper_fabric": "upper_fabric",
+    "lower_fabric": "lower_fabric",
+    "outer_fabric": "outer_fabric",
+    "upper_color": "upper_color",
+    "lower_color": "lower_color",
+    "outer_color": "outer_color"
 }
 
+
+
+recents = {}
 
 
 
@@ -276,14 +273,19 @@ def swipe_right():
     clothes_id = data["clothes_id"]
 
     clothes_data = realclothesdata[clothes_id]
-    userdata = user_data[user_id]
-    for item in clothes_data:
-        userdata[item][clothes_data[item]] += 1
+    for key, value in mapped_labels.items():
+        cursor.execute("""select %s from "UserPreferenceMapping" where user_id = %s""", (value, user_id))
+        data = cursor.fetchone()[0]
+        data[
+            clothes_data[key]
+        ] += 1
+        cursor.execute("""update "UserPreferenceMapping" set %s = %s where user_id = %s""", (value, data, user_id))
 
-    user_data[user_id] = userdata
-    user_data[user_id]["recent"].append(clothes_id)
-    if len(user_data[user_id]["recent"]) > 20:
-        user_data[user_id]["recent"].pop(0)
+    if user_id not in recents:
+        recents[user_id] = []
+    recents[user_id].append(clothes_id)
+    if len(recents[user_id]) > 20:
+        recents[user_id].pop(0)
 
     return jsonify({"status": "success"})
 
@@ -305,30 +307,33 @@ def swipe_left():
 
 
     clothes_id = data["clothes_id"]
-
     clothes_data = realclothesdata[clothes_id]
-    userdata = user_data[user_id]
-    for item in clothes_data:
-        userdata[item][clothes_data[item]] -= 1
+    for key, value in mapped_labels.items():
+        cursor.execute("""select %s from "UserPreferenceMapping" where user_id = %s""", (value, user_id))
+        data = cursor.fetchone()[0]
+        data[
+            clothes_data[key]
+        ] -= 1
+        cursor.execute("""update "UserPreferenceMapping" set %s = %s where user_id = %s""", (value, data, user_id))
 
-    user_data[user_id] = userdata
-    user_data[user_id]["recent"].append(clothes_id)
-    if len(user_data[user_id]["recent"]) > 20:
-        user_data[user_id]["recent"].pop(0)
 
+
+    if user_id not in recents:
+        recents[user_id] = []
+    recents[user_id].append(clothes_id)
+    if len(recents[user_id]) > 20:
+        recents[user_id].pop(0)
 
     return jsonify({"status": "success"})
 
 
-def match(user_id, clothes_id):
+def match(userdata, clothes_id):
     # userdata = user_data[user_id]
-    cursor.execute("""SELECT * FROM "UserPreferenceMapping" WHERE user_id = %s""", (user_id,))
-    userdata = cursor.fetchone()[1:]
-
+    
     clothes_data = realclothesdata[clothes_id]
 
     score = 0
-    for i, item in enumerate(clothes_data):
+    for i, item in enumerate(list(clothes_data.keys())[1:]):
         score += userdata[i][clothes_data[item]]
 
     return score
@@ -343,9 +348,11 @@ def getnext():
         return jsonify({"status": "error", "message": "Invalid token"})
     user_id = tokens[token]
 
+    cursor.execute("""SELECT * FROM "UserPreferenceMapping" WHERE user_id = %s""", (user_id,))
+    userdata = cursor.fetchone()[1:]
 
 
-    ids = sorted(realclothesdata.keys(), key=lambda x: match(user_id, x), reverse=True)
+    ids = sorted(realclothesdata.keys(), key=lambda x: match(userdata, x), reverse=True)
     chosen = []
     i = 0
     while len(chosen) < 50:
