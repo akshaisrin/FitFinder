@@ -177,10 +177,10 @@ def send_message():
 
     if not fe.validate({
         "token": str,
-        "receiver_id":str,
+        # "receiver_id":str,
         "message_text":str,
-        "chat_id":int,
-        "timestamp":str
+        "chat_id":str,
+        "timestamp":float
     }, request.json):
         return fe.invalid_data()
 
@@ -189,15 +189,15 @@ def send_message():
         return jsonify({"status": "error", "message": "Invalid token"})
     
     sender_id = tokens[token]
-    receiver_id=request.json["receiver_id"]
+    # receiver_id=request.json["receiver_id"]
     message_text=request.json["message_text"]
     chat_id=request.json["chat_id"]
     timestamp=request.json["timestamp"]
 
     message_id=str(uuid.uuid4())
 
-    cursor.execute("""INSERT INTO "MessageInfo" (message_id, sender_id, receiver_id, chat_id, message_text, timestamp) 
-                   VALUES (%s, %s, %s, %s, %s)""", (message_id, sender_id, receiver_id, chat_id, message_text, timestamp))
+    cursor.execute("""INSERT INTO "MessageInfo" (message_id, sender_id, chat_id, message_text, timestamp) 
+                   VALUES (%s, %s, %s, %s, %s)""", (message_id, sender_id, chat_id, message_text, timestamp))
     return jsonify({"status": "success"})  
     
 @app.route("/api/create_chat", methods=["POST"])
@@ -379,6 +379,15 @@ def get_user_info():
                 "top_style_pics":data[6]}
 
     return jsonify(data_dict)
+
+@app.route("/api/whoami", methods=["POST"])
+def whoami():
+    data = request.json
+    token = data["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"})
+    user_id = tokens[token]
+    return user_id
 
 @app.route("/api/get_user_chats", methods=["POST"])
 def get_user_chats():
