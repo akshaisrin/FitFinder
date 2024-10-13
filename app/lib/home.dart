@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'home_content.dart';
 import 'profile.dart';
+import 'package:fit_finder/messages.dart';
 
 
 const Color deepPurple = Color(0xFF6A0DAD);
@@ -16,18 +17,31 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  late String _token;
 
-  final List<Widget> _tabs = [
-    HomeContent(),
-    PlaceholderWidget(title: 'Marketplace'),
-    PlaceholderWidget(title: 'Messages'),
-    ProfilePage(),
-  ];
+
+
+
+
+  late List<Widget> _tabs;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _token = widget.token;  // Initialize _token in initState
+    _tabs = [
+      HomeContent(),
+      PlaceholderWidget(title: 'Marketplace'),
+      MessagesPage(token: _token),
+      ProfilePage(),
+    ];
   }
 
   @override
