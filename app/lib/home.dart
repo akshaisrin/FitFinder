@@ -1,36 +1,29 @@
 // home.dart
+import 'package:fit_finder/messages.dart';
 import 'package:flutter/material.dart';
 import 'home_content.dart';
 import 'profile.dart';
-import 'package:fit_finder/messages.dart';
-
+import 'package:fit_finder/explore.dart';
+import 'settings.dart';
 
 const Color deepPurple = Color(0xFF6A0DAD);
 
 class HomePage extends StatefulWidget {
-  final String token;
-  const HomePage({Key? key, required this.token}) : super(key: key);
+
+  String token;
+  HomePage({required this.token});
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
+
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  late String _token;
 
+  String _token = "";
 
-
-
-
-  late List<Widget> _tabs;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-  }
+  List<Widget> _tabs = [];
 
   @override
   void initState() {
@@ -38,17 +31,23 @@ class _HomePageState extends State<HomePage> {
     _token = widget.token;  // Initialize _token in initState
     _tabs = [
       HomeContent(),
-      PlaceholderWidget(title: 'Marketplace'),
+      ExplorePage(token: _token),
       MessagesPage(token: _token),
-      ProfilePage(),
+      ProfilePage(token: _token),
     ];
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             Text(
               'FitFinder',
@@ -62,10 +61,11 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: deepPurple,
         elevation: 0,
+        automaticallyImplyLeading: false,
         actions: [
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.filter_list),
+              icon: Icon(Icons.filter_list),
               color: Colors.white,
               iconSize: 30,
               onPressed: () {
@@ -80,7 +80,7 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
+            DrawerHeader(
               decoration: BoxDecoration(
                 color: deepPurple,
               ),
@@ -93,17 +93,19 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.settings, color: deepPurple),
-              title: const Text('Settings'),
+              leading: Icon(Icons.settings, color: deepPurple),
+              title: Text('Profile Settings'),
               onTap: () {
                 Navigator.pop(context);
-                // Navigate to Settings page or perform other actions
-                print('Settings tapped');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()), // Navigate to SettingsPage
+                );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.logout, color: deepPurple),
-              title: const Text('Logout'),
+              leading: Icon(Icons.logout, color: deepPurple),
+              title: Text('Logout'),
               onTap: () {
                 Navigator.pop(context);
                 // Perform logout action
@@ -119,7 +121,7 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: Container(
         color: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: EdgeInsets.symmetric(vertical: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -128,14 +130,14 @@ class _HomePageState extends State<HomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.home),
+                  icon: Icon(Icons.person_add),
                   iconSize: 38,
                   color: _selectedIndex == 0 ? deepPurple : Colors.grey,
                   onPressed: () => _onItemTapped(0),
-                  tooltip: 'Home',
+                  tooltip: 'Connect',
                 ),
                 Text(
-                  'Home',
+                  'Connect',
                   style: TextStyle(
                     color: _selectedIndex == 0 ? deepPurple : Colors.grey,
                     fontSize: 12.0,
@@ -143,19 +145,19 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            // Marketplace Button with Label
+            // Explore Button with Label
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.store),
+                  icon: Icon(Icons.search),
                   iconSize: 38,
                   color: _selectedIndex == 1 ? deepPurple : Colors.grey,
                   onPressed: () => _onItemTapped(1),
-                  tooltip: 'Marketplace',
+                  tooltip: 'Explore',
                 ),
                 Text(
-                  'Marketplace',
+                  'Explore',
                   style: TextStyle(
                     color: _selectedIndex == 1 ? deepPurple : Colors.grey,
                     fontSize: 12.0,
@@ -168,7 +170,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.message),
+                  icon: Icon(Icons.message),
                   iconSize: 38,
                   color: _selectedIndex == 2 ? deepPurple : Colors.grey,
                   onPressed: () => _onItemTapped(2),
@@ -188,7 +190,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.person),
+                  icon: Icon(Icons.person),
                   iconSize: 38,
                   color: _selectedIndex == 3 ? deepPurple : Colors.grey,
                   onPressed: () => _onItemTapped(3),
@@ -213,14 +215,14 @@ class _HomePageState extends State<HomePage> {
 class PlaceholderWidget extends StatelessWidget {
   final String title;
 
-  const PlaceholderWidget({super.key, required this.title});
+  PlaceholderWidget({required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Text(
         '$title Page',
-        style: const TextStyle(fontSize: 24, color: deepPurple),
+        style: TextStyle(fontSize: 24, color: deepPurple),
       ),
     );
   }
