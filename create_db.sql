@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS "UserInfo"(
     "follower_ids" VARCHAR(255)[], 
     "following_ids" VARCHAR(255)[], 
     "style_description" VARCHAR(255), 
-    "top_style_pics" INT[], 
+    "top_style_pics" INT[],
+    "saved_pics" INT[], 
     PRIMARY KEY("user_id")
 );
 
