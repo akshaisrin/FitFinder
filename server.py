@@ -99,8 +99,8 @@ def get_image(id_):
     bucket = s3.Bucket("fitfinder")
     obj = bucket.Object(item)
     response = obj.get()
-    base64_image = base64.b64encode(response["Body"].read()).decode()
-    return jsonify({"status": "success", "image": base64_image})
+    
+    return jsonify({"status": "success", "image": response["Body"].read().decode("utf-8")})
 
 @app.route("/api/do_ai_styling", methods=["POST"])
 def do_ai_styling():
