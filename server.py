@@ -357,7 +357,7 @@ def getnext():
     i = 0
     while len(chosen) < 50:
         newid = ids[i]
-        if newid in user_data[user_id]["recent"]:
+        if newid in recents[user_id]:
             i += 1
             continue
         chosen.append(newid)
