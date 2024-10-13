@@ -100,7 +100,7 @@ def get_image(id_):
     obj = bucket.Object(item)
     response = obj.get()
     
-    return jsonify({"status": "success", "image": response["Body"].read().decode("utf-8")})
+    return jsonify({"status": "success", "image": response["Body"].read()})
 
 @app.route("/api/do_ai_styling", methods=["POST"])
 def do_ai_styling():
