@@ -14,7 +14,7 @@ class ExplorePage extends StatefulWidget {
   _ExplorePageState createState() => _ExplorePageState();
 }
 
-class _ExplorePageState extends State<ExplorePage> {
+class _ExplorePageState extends State<ExplorePage> with WidgetsBindingObserver {
   late MatchEngine _matchEngine;
   List<SwipeItem> _swipeItems = [];
   List<String> bookmarkedImages = []; // List to store bookmarked images
@@ -27,9 +27,30 @@ class _ExplorePageState extends State<ExplorePage> {
   void initState() {
     super.initState();
     _fetchSwipeItems(); // Fetch and create swipe items when the widget initializes
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Fetch the swipe items after the widget is created
+    _fetchSwipeItems();
+  }
+
+  @override
+  void didPopNext() {
+    // This gets called when returning to this page from another page
+    _fetchSwipeItems(); // Refresh the page data when navigating back to it
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Clean up observer
+    super.dispose();
   }
 
   Future<void> _fetchSwipeItems() async {
+    _swipeItems = [];
     List<SwipeItem> tempSwipeItems = [];
     try {
       for (int i = 0; i < 50; i++) {

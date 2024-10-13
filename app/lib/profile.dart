@@ -15,7 +15,7 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   String name = 'Nico';
   String username = '@nico_style';
   String biography = 'Passionate about fashion and love baggy clothes. From Seattle hmu';
@@ -41,6 +41,26 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchFashionDescription(); // Call the API when the widget is initialized
     token = widget.token;
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Fetch the swipe items after the widget is created
+    _fetchFashionDescription();
+  }
+
+  @override
+  void didPopNext() {
+    // This gets called when returning to this page from another page
+    _fetchFashionDescription(); // Refresh the page data when navigating back to it
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Clean up observer
+    super.dispose();
   }
 
   Future<void> _fetchFashionDescription() async {
