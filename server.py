@@ -26,6 +26,14 @@ os.chdir(base)
 with open("captions.json") as f:
     filenames = json.load(f).keys()
 
+with open("classifications.txt") as f:
+    c = f.read()
+    lines = c.split("\n")
+    classifications = {}
+    for l in lines:
+        c, tags = l.split(":")
+        classifications[c] = tags.split(",")
+
 app = Flask(__name__)
 
 with open("tagged.json") as f:
@@ -69,12 +77,11 @@ def login():
     return jsonify({"status": "success", "token": token})
 
 
-@app.route("/api/get_image", methods=["POST"])
-def get_image():
+@app.route("/api/get_image/<id_>", methods=["POST"])
+def get_image(id_):
 
     if not fe.validate({
-        "token": str,
-        "id": str
+        "token": str
     }, request.json):
         return fe.invalid_data()
     
@@ -82,18 +89,48 @@ def get_image():
     # if token not in tokens:
     #     return jsonify({"status": "error", "message": "Invalid token"})
     
-    id_ = request.json["id"]
+    # id_ = request.json["id"]
 
     for item in filenames:
         if id_ + "_1" in item:
             break
     
-    print(item)
     bucket = s3.Bucket("fitfinder")
     obj = bucket.Object(item)
     response = obj.get()
     base64_image = base64.b64encode(response["Body"].read()).decode()
     return jsonify({"status": "success", "image": base64_image})
+
+@app.route("/api/get_classes", methods=["POST"])
+def get_classes():
+    if not fe.validate({
+        "token": str,
+        "id": str
+    }, request.json):
+        return fe.invalid_data()
+    
+    token = request.json["token"]
+    if token not in tokens:
+        return jsonify({"status": "error", "message": "Invalid token"}), 400
+    
+    id_ = request.json["id"]
+    if id_ not in realclothesdata:
+        return jsonify({"status": "error", "message": "Invalid ID"}), 400
+    
+    ids = realclothesdata[id_]
+    classes = {
+    }
+
+    actualids = list(ids.keys())
+    actualids.remove("gender")
+
+
+    for i in range(len(actualids)):
+        id_name = list(classifications.keys())[i]
+        num = ids[actualids[i]]
+        classes[id_name] = classifications[id_name][num]
+        
+    return jsonify({"status": "success", "classes": classes})
 
 
 @app.route("/api/register", methods=["POST"])
@@ -116,7 +153,7 @@ def register():
         return fe.already_exists()
 
     userid = str(uuid.uuid4())
-    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password) VALUES (%s, %s, %s, %s)""", (userid, useremail, username, pwdhash))
+    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description) VALUES (%s, %s, %s, %s, array[]::text[], array[]::text[], %s)""", (userid, useremail, username, pwdhash, ""))
     token = str(uuid.uuid4())
     tokens[token] = userid
     return jsonify({"status": "success", "token": token})
@@ -322,15 +359,16 @@ def get_user_info():
         return jsonify({"status": "error", "message": "Invalid token"})
     user_id = tokens[token]
 
-    cursor.execute("""SELECT * FROM "UserInfo" WHERE user_id = %s""", (user_id,))
+    cursor.execute("""SELECT username, user_email, user_password, user_bio_text, follower_ids, following_ids,\
+                   style_description, top_style_pics FROM "UserInfo" WHERE user_id = %s""", (user_id,))
     data = cursor.fetchone()
     if data is None:
         return fe.invalid_credentials()
 
-    data_dict={"user_name":data["user_name"], "user_email":data["user_email"], "user_password": data["user_password"], \
-               "user_bio_text":data["user_bio_text"], "follower_ids": data["follower_ids"], \
-                "following_ids":data["following_ids"], "style_description":data["style_description"], \
-                "top_style_pics":data["top_style_pics"]}
+    data_dict={"username":data[0], "user_email":data[1], "user_password": data[2], \
+               "user_bio_text":data[3], "follower_ids": data[4], \
+                "following_ids":data[5], "style_description":data[6], \
+                "top_style_pics":data[7]}
 
     return jsonify(data_dict)
 
