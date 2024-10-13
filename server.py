@@ -151,7 +151,7 @@ def register():
         return fe.already_exists()
 
     userid = str(uuid.uuid4())
-    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description) VALUES (%s, %s, %s, %s, array[]::text[], array[]::text[], %s)""", (userid, useremail, username, pwdhash, ""))
+    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description, display_name) VALUES (%s, %s, %s, %s, array[]::text[], array[]::text[], %s, %s)""", (userid, useremail, username, pwdhash, "", username))
     
     # im so sorry
     cursor.execute("""INSERT INTO "UserPreferenceMapping" (user_id, 
@@ -384,7 +384,7 @@ def get_user_info():
     user_id = data["user_id"]
 
     cursor.execute("""SELECT username, user_id, user_bio_text, follower_ids, following_ids,\
-                   style_description, top_style_pics FROM "UserInfo" WHERE user_id = %s""", (user_id,))
+                   style_description, top_style_pics, display_name FROM "UserInfo" WHERE user_id = %s""", (user_id,))
     data = cursor.fetchone()
     if data is None:
         return fe.invalid_credentials()
