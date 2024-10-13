@@ -104,8 +104,7 @@ def get_image(id_):
 @app.route("/api/get_classes", methods=["POST"])
 def get_classes():
     if not fe.validate({
-        "token": str,
-        "id": str
+        "token": str
     }, request.json):
         return fe.invalid_data()
     
@@ -113,22 +112,15 @@ def get_classes():
     if token not in tokens:
         return jsonify({"status": "error", "message": "Invalid token"}), 400
     
-    id_ = request.json["id"]
-    if id_ not in realclothesdata:
-        return jsonify({"status": "error", "message": "Invalid ID"}), 400
-    
-    ids = realclothesdata[id_]
-    classes = {
-    }
+    cursor.execute("""select * from "UserPreferenceMapping" where user_id = %s""", (tokens[token],))
+    data = cursor.fetchone()[1:]
 
-    actualids = list(ids.keys())
-    actualids.remove("gender")
+    classes = {}
 
+    for i in range(len(data)):
+        maximum = max(data[i])
+        classes[list(classifications.keys())[i]] = classifications[list(classifications.keys())[i]][data[i].index(maximum)]
 
-    for i in range(len(actualids)):
-        id_name = list(classifications.keys())[i]
-        num = ids[actualids[i]]
-        classes[id_name] = classifications[id_name][num]
         
     return jsonify({"status": "success", "classes": classes})
 
@@ -154,6 +146,20 @@ def register():
 
     userid = str(uuid.uuid4())
     cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description) VALUES (%s, %s, %s, %s, array[]::text[], array[]::text[], %s)""", (userid, useremail, username, pwdhash, ""))
+    
+    # im so sorry
+    cursor.execute("""INSERT INTO "UserPreferenceMapping" (user_id, 
+                   sleeve_length, lower_clothing_length, socks, hat, glasses, neckwear, wrist_wearing, ring, waist_accessories,
+                   neckline, outer_clothing, upper_clothing, upper_fabric, lower_fabric, outer_fabric,
+                   upper_color, lower_color, outer_color) (
+                   %s, ARRAY[0, 0, 0, 0, 0, 0,], ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0], ARRAY[0, 0, 0],
+                   ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0], ARRAY[0, 0, 0], ARRAY[0, 0, 0], 
+                   ARRAY[0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0], ARRAY[0, 0, 0], 
+                   ARRAY[0, 0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0, 0], 
+                   ARRAY[0, 0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0, 0], ARRAY[0, 0, 0, 0, 0, 0, 0, 0])""", (userid,))
+    
+    
+    
     token = str(uuid.uuid4())
     tokens[token] = userid
     return jsonify({"status": "success", "token": token})
