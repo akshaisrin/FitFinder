@@ -1,2 +1,2 @@
-firebase
 flask
+boto3
