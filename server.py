@@ -326,10 +326,10 @@ def get_user_info():
     if data is None:
         return fe.invalid_credentials()
 
-    data_dict={"user_name":data["user_name"], "user_email":data["user_email"], "user_password": data["user_password"], \
-               "user_bio_text":data["user_bio_text"], "follower_ids": data["follower_ids"], \
-                "following_ids":data["following_ids"], "style_description":data["style_description"], \
-                "top_style_pics":data["top_style_pics"]}
+    data_dict={"user_name":data[0], "user_email":data[1], "user_password": data[2], \
+               "user_bio_text":data[3], "follower_ids": data[4], \
+                "following_ids":data[5], "style_description":data[6], \
+                "top_style_pics":data[7]}
 
     return jsonify(data_dict)
 
