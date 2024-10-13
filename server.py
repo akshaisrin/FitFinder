@@ -149,7 +149,7 @@ def register():
         return fe.already_exists()
 
     userid = str(uuid.uuid4())
-    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description) VALUES (%s, %s, %s, %s, array[]::text[], array[]::text[], "")""", (userid, useremail, username, pwdhash))
+    cursor.execute("""INSERT INTO "UserInfo" (user_id, user_email, username, user_password, follower_ids, following_ids, style_description) VALUES (%s, %s, %s, %s, array[]::text[], array[]::text[], %s)""", (userid, useremail, username, pwdhash, ""))
     token = str(uuid.uuid4())
     tokens[token] = userid
     return jsonify({"status": "success", "token": token})
